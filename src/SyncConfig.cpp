@@ -93,6 +93,44 @@ void SyncConfig::setOnedriveLocalPath(const QString& path)
     }
 }
 
+// QSettings 的 key 不能带 '/'，远端名理论上只是文件名，这里再做一次清洗兜底
+static QString etagKey(const QString& remoteName)
+{
+    QString key = remoteName;
+    key.replace('/', '_');
+    key.replace('\\', '_');
+    return key;
+}
+
+QString SyncConfig::etagFor(const QString& remoteName) const
+{
+    if (remoteName.isEmpty())
+        return QString();
+    m_settings.beginGroup("etags");
+    const QString value = m_settings.value(etagKey(remoteName), QString()).toString();
+    m_settings.endGroup();
+    return value;
+}
+
+void SyncConfig::setEtag(const QString& remoteName, const QString& etag)
+{
+    if (remoteName.isEmpty())
+        return;
+    m_settings.beginGroup("etags");
+    if (etag.isEmpty())
+        m_settings.remove(etagKey(remoteName));
+    else
+        m_settings.setValue(etagKey(remoteName), etag);
+    m_settings.endGroup();
+    m_settings.sync();   // 立即落盘：崩溃后 ETag 丢失会导致重复拉同一本书
+    emit changed();
+}
+
+void SyncConfig::removeEtag(const QString& remoteName)
+{
+    setEtag(remoteName, QString());
+}
+
 void SyncConfig::load()
 {
     m_platform = static_cast<Platform>(m_settings.value("platform", 0).toInt());

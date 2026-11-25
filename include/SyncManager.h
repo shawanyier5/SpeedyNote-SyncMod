@@ -18,6 +18,7 @@
 
 #include "SyncBackend.h"
 #include "SyncConfig.h"
+#include "NotebookPackage.h"
 
 namespace SyncMod {
 
@@ -54,8 +55,13 @@ signals:
     // 需要宿主配合：把某个笔记本落盘为 .snbx（宿主实现）
     // relativePath 用于匹配，宿主回填 bytes
     void requestLocalSnapshot(const QString& relativePath, QByteArray* outData);
-    // 需要宿主配合：用 .snbx 数据覆盖/导入本地笔记本
-    void applyRemoteSnapshot(const QString& relativePath, const QByteArray& data);
+    // 需要宿主配合：把远端拉下来的 .snbx 导入本地
+    // remoteName : 远端文件名，如 "MyNote.snbx"
+    // tmpSnbxPath: 已落盘的临时 .snbx 路径，宿主 importPackage 后负责删除
+    // etag       : 远端版本标识，导入成功后由宿主回填 SyncConfig
+    void applyRemoteSnapshot(const QString& remoteName,
+                             const QString& tmpSnbxPath,
+                             const QString& etag);
 
 private slots:
     void onTimerFire();
@@ -70,12 +76,24 @@ private:
     void doSync();
     void finishSync(bool ok, const QString& message);
 
+    // 阶段 2：扫描本地 .snb 并逐个打包上传
+    void startUploadPhase();
+    void uploadNextLocal();
+
     SyncConfig* m_config = nullptr;
     SyncBackend* m_backend = nullptr;
     QTimer m_timer;
 
     QList<RemoteEntry> m_pendingEntries;
     int m_pendingIndex = 0;
+
+    // 本轮从远端拉下来的文件名，上传阶段跳过，避免原样推回
+    QStringList m_downloadedThisRound;
+
+    // 同步阶段：0=列目录 1=拉远端 2=传本地
+    int m_phase = 0;
+    int m_uploadIndex = 0;
+    QList<NotebookPackage::Info> m_localNotebooks;
 
     QDateTime m_lastSyncTime;
     bool m_lastSyncOk = false;

@@ -19,9 +19,23 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Network)
 set(SYNCMOD_SOURCES
     src/SyncConfig.cpp
     src/SyncManager.cpp
+    src/NotebookPackage.cpp
     backends/WebDavBackend.cpp
     backends/OneDriveBackend.cpp
 )
+
+# miniz: 与上游 SpeedyNote 共用同一个 ZIP 库（MIT）
+# 由宿主通过 SYNCMOD_MINIZ_DIR 传入上游 thirdparty/miniz 路径；
+# 独立构建时可自行下载 miniz 放到本库 thirdparty/miniz。
+if(NOT DEFINED SYNCMOD_MINIZ_DIR)
+    set(SYNCMOD_MINIZ_DIR "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/miniz")
+endif()
+if(EXISTS "${SYNCMOD_MINIZ_DIR}/miniz.c")
+    list(APPEND SYNCMOD_SOURCES "${SYNCMOD_MINIZ_DIR}/miniz.c")
+    include_directories("${SYNCMOD_MINIZ_DIR}")
+else()
+    message(WARNING "miniz not found at ${SYNCMOD_MINIZ_DIR}; .snbx packing will fail to link")
+endif()
 
 set(SYNCMOD_HEADERS
     include/SyncBackend.h

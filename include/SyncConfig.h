@@ -65,6 +65,12 @@ public:
     QString onedriveLocalPath() const { return m_onedriveLocalPath; }
     void setOnedriveLocalPath(const QString& path);
 
+    // ---- 上次同步的远端版本标识 ----
+    // 远端没变就跳过拉取，避免每轮定时同步都重复导入/备份同一本书
+    QString etagFor(const QString& remoteName) const;
+    void setEtag(const QString& remoteName, const QString& etag);
+    void removeEtag(const QString& remoteName);
+
     // ---- 持久化 ----
     void load();
     void save();
@@ -73,7 +79,7 @@ signals:
     void changed();
 
 private:
-    QSettings m_settings;
+    mutable QSettings m_settings;
 
     Platform m_platform = Platform::Disabled;
     int m_intervalMinutes = 15;
