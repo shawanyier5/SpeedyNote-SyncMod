@@ -3,6 +3,7 @@
 
 #include <QXmlStreamReader>
 #include <QUrlQuery>
+#include <QTimeZone>
 
 namespace SyncMod {
 
@@ -123,7 +124,11 @@ void WebDavBackend::parsePropfind(const QByteArray& xml, QList<RemoteEntry>& out
             } else if (inResponse && name == "getlastmodified") {
                 current.modified = QDateTime::fromString(
                     reader.readElementText(), Qt::RFC2822Date);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
+                current.modified.setTimeZone(QTimeZone::UTC);
+#else
                 current.modified.setTimeSpec(Qt::UTC);
+#endif
             } else if (inResponse && (name == "etag" || name == "getetag")) {
                 current.etag = reader.readElementText();
             }

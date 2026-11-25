@@ -1,7 +1,7 @@
 #include "SyncManager.h"
 
-#include "backends/WebDavBackend.h"
-#include "backends/OneDriveBackend.h"
+#include "WebDavBackend.h"
+#include "OneDriveBackend.h"
 
 #include <QDir>
 #include <QFileInfo>
