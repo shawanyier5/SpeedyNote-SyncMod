@@ -1,5 +1,7 @@
 # SpeedyNote-SyncMod（库 B：同步模块）
 
+> **出处声明**：本模块由 **AI（WorkBuddy）辅助重构**编写，服务于原项目 [alpha-liu-01/SpeedyNote](https://github.com/alpha-liu-01/SpeedyNote)（GPL-3.0，原作者 alpha-liu-01）的派生版本。非原作者作品，问题请勿打扰原作者。配套本体见 `SpeedyNote-PluginHost` 仓库。
+
 给 SpeedyNote 提供多端同步能力的独立模块。**编译期静态链接**到库 A（插件版软件本体），无动态库加载开销、无运行时脚本引擎，符合"旧设备也能跑"的原则。
 
 ## 设计原则
